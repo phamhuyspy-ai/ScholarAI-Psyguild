@@ -1,8 +1,20 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiClient: GoogleGenAI | null = null;
+
+function getAIClient() {
+  if (!aiClient) {
+    const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("Vui lòng cấu hình GEMINI_API_KEY trong biến môi trường (Environment Variables) trên Vercel.");
+    }
+    aiClient = new GoogleGenAI({ apiKey });
+  }
+  return aiClient;
+}
 
 export async function generateResearchDesign(topic: string) {
+  const ai = getAIClient();
   const prompt = `Bạn là một chuyên gia nghiên cứu học thuật. Hãy thiết kế một nghiên cứu toàn diện cho chủ đề sau: "${topic}".
   
 Bao gồm:
@@ -28,6 +40,7 @@ Bao gồm:
 }
 
 export async function checkTopicDuplication(topic: string) {
+  const ai = getAIClient();
   const prompt = `Bạn là một trợ lý nghiên cứu học thuật. Một sinh viên muốn nghiên cứu chủ đề sau: "${topic}".
   
 Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng link nguồn. Tập trung tìm kiếm trên các nền tảng nghiên cứu chính thống:
@@ -52,6 +65,7 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 }
 
 export async function checkPlagiarism(text: string) {
+  const ai = getAIClient();
   const prompt = `Bạn là một hệ thống kiểm tra đạo văn học thuật (Plagiarism Detection System) sử dụng NLP. Hãy phân tích văn bản sau để tìm kiếm sự trùng lặp ý tưởng hoặc thiếu tính nguyên bản.
 
 Văn bản cần phân tích:
@@ -80,6 +94,7 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 }
 
 export async function analyzeVideo(fileData: string, mimeType: string, prompt: string) {
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
     contents: {
@@ -101,6 +116,7 @@ export async function analyzeVideo(fileData: string, mimeType: string, prompt: s
 }
 
 export async function translateText(text: string, targetLanguage: string) {
+  const ai = getAIClient();
   const prompt = `Bạn là một chuyên gia dịch thuật tài liệu học thuật. Hãy dịch đoạn văn bản sau sang ${targetLanguage} một cách chính xác nhất.
 Giữ nguyên văn phong học thuật, thuật ngữ chuyên ngành và ý nghĩa gốc. Không thêm bất kỳ bình luận nào, chỉ cung cấp bản dịch.
 
@@ -112,37 +128,6 @@ ${text}
   const response = await ai.models.generateContent({
     model: "gemini-3.1-pro-preview",
     contents: prompt,
-  });
-
-  return response.text;
-}
-
-export async function generateContentStrategy(topic: string) {
-  const prompt = `Bạn là một Chuyên gia Chiến lược Nội dung số (Digital Content Strategist) và SEO. Khách hàng của bạn là một sinh viên Tâm lý học tại HUTECH kiêm Full-stack Developer.
-Họ muốn xây dựng nội dung "thực chứng" (data-driven) và chuyên sâu dựa trên chủ đề hoặc dữ liệu nghiên cứu sau: "${topic}".
-
-Hãy lập một chiến lược nội dung đa kênh cho năm 2026 bao gồm:
-1. Nghiên cứu từ khóa theo mục đích (User Intent):
-   - Website (SEO): Từ khóa dạng câu hỏi, định nghĩa chuyên sâu.
-   - YouTube: Từ khóa "How-to", "Review".
-   - TikTok/Facebook: Từ khóa cảm xúc, nỗi đau (Pain points), xu hướng ngắn hạn.
-2. Đề xuất các góc độ nội dung "Hot":
-   - Kết hợp Tâm lý học & Công nghệ (AI Therapy, Digital Detox, v.v.)
-   - Đời sống sinh viên & Học thuật (Kinh nghiệm thực tập, khảo sát thực tế)
-   - Xu hướng xã hội (Eco-Anxiety, Neurodiversity, v.v.)
-3. Công thức phân phối nội dung (Multi-channel):
-   - Gợi ý cách "xào nấu" (repurpose) nội dung này cho Website, YouTube, TikTok, và Facebook.
-4. Tiêu đề Viral:
-   - Tạo 5 tiêu đề video TikTok/Shorts có khả năng viral cao, đánh trúng tâm lý Gen Z.
-
-Định dạng đầu ra bằng Markdown. Vui lòng trả lời hoàn toàn bằng tiếng Việt, giọng văn hiện đại, thực tế và truyền cảm hứng.`;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.1-pro-preview",
-    contents: prompt,
-    config: {
-      thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH }
-    }
   });
 
   return response.text;

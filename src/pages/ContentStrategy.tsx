@@ -24,7 +24,11 @@ export default function ContentStrategy() {
     setResult('');
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error("Vui lòng cấu hình GEMINI_API_KEY trong biến môi trường (Environment Variables) trên Vercel.");
+      }
+      const ai = new GoogleGenAI({ apiKey });
       const prompt = `Bạn là một chuyên gia Content Marketing, SEO và Phân tích xu hướng mạng xã hội.
 
 Dựa trên chủ đề/ý tưởng sau:
