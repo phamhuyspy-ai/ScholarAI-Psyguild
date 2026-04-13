@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID" },
+        "email": { "type": "string", "description": "The user's email address" },
+        "displayName": { "type": "string", "description": "The user's display name" },
+        "photoURL": { "type": "string", "description": "The user's photo URL" },
+        "createdAt": { "type": "timestamp", "description": "When the user was created" }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "ResearchProject": {
+      "title": "ResearchProject",
+      "description": "A research project created by a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "topic": { "type": "string" },
+        "design": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      },
+      "required": ["id", "userId", "title", "createdAt", "updatedAt"]
+    },
+    "AnalysisResult": {
+      "title": "AnalysisResult",
+      "description": "A result of an analysis (duplication, plagiarism, video)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["duplication", "plagiarism", "video"] },
+        "input": { "type": "string" },
+        "result": { "type": "string" },
+        "createdAt": { "type": "timestamp" }
+      },
+      "required": ["id", "userId", "type", "input", "result", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles"
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/ResearchProject" },
+      "description": "Research projects"
+    },
+    "/analyses/{analysisId}": {
+      "schema": { "$ref": "#/entities/AnalysisResult" },
+      "description": "Analysis results"
+    }
+  }
+}

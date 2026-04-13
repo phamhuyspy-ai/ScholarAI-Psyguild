@@ -1,0 +1,5 @@
+{
+  "name": "ScholarAI Psyguild",
+  "description": "An academic research assistant for research design, topic duplication checking, plagiarism checking, and video analysis. Branch of Psyguild.",
+  "requestFramePermissions": []
+}
