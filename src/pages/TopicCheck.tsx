@@ -1,25 +1,50 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { checkTopicDuplication } from '../lib/gemini';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
 import { Loader2, Search } from 'lucide-react';
+import { useAuth } from '../lib/auth';
+import { ProgressBar } from '../components/ProgressBar';
+import { generateAIContent } from '../lib/ai';
 
 export default function TopicCheck() {
   const [topic, setTopic] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user, userData, isAdmin } = useAuth();
 
   const handleCheck = async () => {
     if (!topic.trim()) return;
     setLoading(true);
     try {
-      const res = await checkTopicDuplication(topic);
+      const prompt = `Bạn là một chuyên gia đánh giá đề tài nghiên cứu khoa học.
+
+Hãy phân tích chủ đề nghiên cứu sau để kiểm tra mức độ trùng lặp và tính mới:
+"${topic}"
+
+Vui lòng cung cấp báo cáo phân tích chi tiết bằng Markdown RÕ RÀNG, ĐẸP MẮT, bắt buộc sử dụng BẢNG (Table) và DANH SÁCH (List) theo cấu trúc sau:
+
+1. Đánh giá Tính mới (Sử dụng Danh sách):
+   - Mức độ trùng lặp ước tính (Cao/Trung bình/Thấp).
+   - Đánh giá chung về tính cấp thiết và khả năng thực hiện.
+
+2. Các Nghiên cứu Tương tự Đã có (BẮT BUỘC TRÌNH BÀY BẰNG BẢNG MARKDOWN):
+   - Tạo một bảng gồm 3 cột: "Hướng nghiên cứu đã có", "Hạn chế của các nghiên cứu này", "Khoảng trống nghiên cứu (Research Gap)".
+   - Liệt kê 3-4 hướng nghiên cứu phổ biến liên quan đến chủ đề này.
+
+3. Gợi ý Hướng đi Mới (Sử dụng Numbered list):
+   - Đề xuất 3-5 góc độ tiếp cận mới mẻ, độc đáo hơn để tránh trùng lặp.
+   - Mỗi gợi ý cần có giải thích ngắn gọn lý do tại sao nó khả thi và có giá trị.
+
+4. Từ khóa Tìm kiếm Tài liệu (Sử dụng Bullet list):
+   - Gợi ý các từ khóa tiếng Việt và tiếng Anh (Keywords) để người dùng tìm kiếm thêm tài liệu tham khảo trên Google Scholar, ResearchGate.`;
+
+      const res = await generateAIContent(prompt, user, userData, isAdmin);
       setResult(res);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setResult('Đã xảy ra lỗi trong quá trình kiểm tra chủ đề.');
+      setResult(error.message || 'Đã xảy ra lỗi trong quá trình kiểm tra chủ đề.');
     } finally {
       setLoading(false);
     }
@@ -44,6 +69,7 @@ export default function TopicCheck() {
               <CardDescription>Nhập chủ đề bạn muốn nghiên cứu.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <ProgressBar isLoading={loading} className="mb-2" />
               <Textarea
                 placeholder="VD: Ảnh hưởng của mạng xã hội đến giấc ngủ của thanh thiếu niên..."
                 className="min-h-[150px] resize-none"

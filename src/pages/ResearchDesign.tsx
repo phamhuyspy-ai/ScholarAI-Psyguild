@@ -1,25 +1,54 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { generateResearchDesign } from '../lib/gemini';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
 import { Loader2, Sparkles } from 'lucide-react';
+import { useAuth } from '../lib/auth';
+import { ProgressBar } from '../components/ProgressBar';
+import { generateAIContent } from '../lib/ai';
 
 export default function ResearchDesign() {
   const [topic, setTopic] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
+  const { user, userData, isAdmin } = useAuth();
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
     try {
-      const res = await generateResearchDesign(topic);
+      const prompt = `Bạn là một Giáo sư hướng dẫn nghiên cứu khoa học xuất sắc.
+
+Dựa trên chủ đề nghiên cứu sau:
+"${topic}"
+
+Hãy thiết kế một khung nghiên cứu toàn diện. Trình bày bằng Markdown RÕ RÀNG, ĐẸP MẮT, bắt buộc sử dụng BẢNG (Table) và DANH SÁCH (List) theo cấu trúc sau:
+
+1. Mục tiêu Nghiên cứu (Sử dụng Bullet list):
+   - Mục tiêu tổng quát.
+   - Các mục tiêu cụ thể (ít nhất 3 mục tiêu).
+
+2. Câu hỏi Nghiên cứu (Sử dụng Numbered list):
+   - Đặt ra 3-5 câu hỏi nghiên cứu cốt lõi cần giải quyết.
+
+3. Phương pháp Nghiên cứu (BẮT BUỘC TRÌNH BÀY BẰNG BẢNG MARKDOWN):
+   - Tạo một bảng gồm 3 cột: "Khía cạnh", "Phương pháp đề xuất", "Lý do lựa chọn".
+   - Các khía cạnh bao gồm: Cách tiếp cận (Định lượng/Định tính/Hỗn hợp), Thu thập dữ liệu, Phân tích dữ liệu, Đối tượng nghiên cứu.
+
+4. Khung Lý thuyết & Khái niệm (Sử dụng Danh sách):
+   - Các lý thuyết chính làm nền tảng.
+   - Các biến số chính (Độc lập, Phụ thuộc, Trung gian - nếu có).
+
+5. Đóng góp Dự kiến (Sử dụng Bullet list):
+   - Đóng góp về mặt lý luận.
+   - Đóng góp về mặt thực tiễn.`;
+
+      const res = await generateAIContent(prompt, user, userData, isAdmin);
       setResult(res);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setResult('Đã xảy ra lỗi trong quá trình tạo thiết kế nghiên cứu.');
+      setResult(error.message || 'Đã xảy ra lỗi trong quá trình tạo thiết kế nghiên cứu.');
     } finally {
       setLoading(false);
     }
@@ -44,6 +73,7 @@ export default function ResearchDesign() {
               <CardDescription>Hãy mô tả càng chi tiết càng tốt về mục tiêu của bạn.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <ProgressBar isLoading={loading} className="mb-2" />
               <Textarea
                 placeholder="VD: Tác động của trí tuệ nhân tạo đối với giáo dục mầm non ở môi trường đô thị..."
                 className="min-h-[200px] resize-none"

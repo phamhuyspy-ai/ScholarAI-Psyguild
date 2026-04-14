@@ -1,26 +1,37 @@
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { translateText } from '../lib/gemini';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
 import { Loader2, Languages } from 'lucide-react';
+import { useAuth } from '../lib/auth';
+import { ProgressBar } from '../components/ProgressBar';
+import { generateAIContent } from '../lib/ai';
 
 export default function Translation() {
   const [text, setText] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [targetLang, setTargetLang] = useState('Vietnamese');
+  const { user, userData, isAdmin } = useAuth();
 
   const handleTranslate = async () => {
     if (!text.trim()) return;
     setLoading(true);
     try {
-      const res = await translateText(text, targetLang);
+      const prompt = `Bạn là một dịch giả chuyên nghiệp và chuyên gia học thuật.
+
+Hãy dịch đoạn văn bản sau sang ${targetLang}, đảm bảo giữ nguyên văn phong học thuật, tính chính xác của các thuật ngữ chuyên ngành và cấu trúc câu mạch lạc:
+
+"${text}"
+
+Chỉ trả về bản dịch, không cần giải thích thêm.`;
+
+      const res = await generateAIContent(prompt, user, userData, isAdmin);
       setResult(res);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setResult('Đã xảy ra lỗi trong quá trình dịch thuật.');
+      setResult(error.message || 'Đã xảy ra lỗi trong quá trình dịch thuật.');
     } finally {
       setLoading(false);
     }
@@ -45,6 +56,7 @@ export default function Translation() {
               <CardDescription>Nhập văn bản bạn muốn dịch.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 h-[calc(100%-100px)] flex flex-col">
+              <ProgressBar isLoading={loading} className="mb-2" />
               <Textarea
                 placeholder="Nhập hoặc dán văn bản vào đây..."
                 className="flex-1 min-h-[300px] resize-none"

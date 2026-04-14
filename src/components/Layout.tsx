@@ -1,8 +1,14 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router';
-import { BookOpen, Search, FileText, Video, LayoutDashboard, Languages, TrendingUp } from 'lucide-react';
+import { BookOpen, Search, FileText, LayoutDashboard, Languages, TrendingUp, Settings, CreditCard, LogIn, LogOut, User as UserIcon, Youtube } from 'lucide-react';
+import { useAuth } from '../lib/auth';
+import { Button } from '../../components/ui/button';
+import { AuthModal } from './AuthModal';
 
 export default function Layout() {
   const location = useLocation();
+  const { user, userData, isAdmin, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const academicItems = [
     { name: 'Bảng điều khiển', path: '/', icon: LayoutDashboard },
@@ -10,12 +16,20 @@ export default function Layout() {
     { name: 'Kiểm tra Chủ đề', path: '/topic', icon: Search },
     { name: 'Kiểm tra Đạo văn', path: '/plagiarism', icon: FileText },
     { name: 'Dịch thuật Học thuật', path: '/translation', icon: Languages },
-    { name: 'Phân tích Video', path: '/video', icon: Video },
   ];
 
   const marketItems = [
     { name: 'Nghiên cứu Từ khóa & Chủ đề', path: '/content-strategy', icon: TrendingUp },
+    { name: 'Chiến lược Xây kênh', path: '/channel-strategy', icon: Youtube },
   ];
+
+  const systemItems = [
+    { name: 'Nâng cấp gói', path: '/pricing', icon: CreditCard },
+  ];
+
+  if (isAdmin) {
+    systemItems.push({ name: 'Cài đặt (Admin)', path: '/settings', icon: Settings });
+  }
 
   const renderNavItems = (items: any[]) => {
     return items.map((item) => {
@@ -64,6 +78,43 @@ export default function Layout() {
             </div>
             {renderNavItems(marketItems)}
           </nav>
+
+          <nav className="px-4 space-y-1 mb-8">
+            <div className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Hệ thống
+            </div>
+            {renderNavItems(systemItems)}
+          </nav>
+        </div>
+
+        {/* User Profile / Auth Section */}
+        <div className="p-4 border-t border-slate-200">
+          {user ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3 px-3">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Avatar" className="w-8 h-8 rounded-full" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                    <UserIcon className="w-4 h-4 text-slate-500" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{user.displayName || 'Người dùng'}</p>
+                  <p className="text-xs text-slate-500 truncate">{userData?.subscription === 'free' ? 'Gói Cơ Bản' : 'Gói Premium'}</p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" className="w-full justify-start text-slate-600" onClick={logout}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Đăng xuất
+              </Button>
+            </div>
+          ) : (
+            <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white" onClick={() => setShowAuthModal(true)}>
+              <LogIn className="w-4 h-4 mr-2" />
+              Đăng nhập
+            </Button>
+          )}
         </div>
       </div>
 
@@ -71,6 +122,8 @@ export default function Layout() {
       <div className="flex-1 overflow-auto">
         <Outlet />
       </div>
+
+      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
     </div>
   );
 }

@@ -13,7 +13,18 @@ service cloud.firestore {
     //   - email: string (required)
     //   - displayName: string (optional)
     //   - photoURL: string (optional)
+    //   - role: string (optional, enum: ['user', 'admin'])
+    //   - subscription: string (optional, enum: ['free', 'monthly', 'yearly'])
+    //   - subscriptionExpiry: timestamp (optional)
     //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: usage
+    // Document ID: {userId}_{date} (e.g. 123_2023-10-27)
+    // Fields:
+    //   - userId: string (required)
+    //   - date: string (required)
+    //   - count: number (required)
+    //   - lastUpdated: timestamp (required)
     //
     // Collection: projects
     // Document ID: {projectId}
@@ -49,6 +60,13 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+        (request.auth.token.email == "chatgptpsy7304@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
     function isDocOwner() {
       return isAuthenticated() && request.auth.uid == resource.data.userId;
     }
@@ -82,12 +100,24 @@ service cloud.firestore {
     // Domain Validators
     // ===============================================================
     function isValidUser() {
-      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'createdAt']) &&
+      return hasOnlyAllowedFields(['uid', 'email', 'displayName', 'photoURL', 'role', 'subscription', 'subscriptionExpiry', 'createdAt']) &&
              isValidString('uid', 1, 128) &&
              isValidString('email', 3, 256) &&
              isValidOptionalString('displayName', 0, 100) &&
              isValidOptionalString('photoURL', 0, 2048) &&
+             (!( 'role' in request.resource.data ) || request.resource.data.role in ['user', 'admin']) &&
+             (!( 'subscription' in request.resource.data ) || request.resource.data.subscription in ['free', 'monthly', 'yearly']) &&
+             (!( 'subscriptionExpiry' in request.resource.data ) || request.resource.data.subscriptionExpiry is timestamp) &&
              request.resource.data.createdAt is timestamp;
+    }
+
+    function isValidUsage() {
+      return hasOnlyAllowedFields(['userId', 'date', 'count', 'lastUpdated']) &&
+             isValidString('userId', 1, 128) &&
+             isValidString('date', 10, 10) &&
+             request.resource.data.count is number &&
+             request.resource.data.count >= 0 &&
+             request.resource.data.lastUpdated is timestamp;
     }
 
     function isValidProject() {
@@ -116,10 +146,23 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUser() && uidUnchanged();
-      allow update: if isOwner(userId) && isValidUser() && uidNotModified() &&
-                    request.resource.data.createdAt == resource.data.createdAt;
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser() && uidUnchanged() && 
+                    (!('role' in request.resource.data) || request.resource.data.role == 'user' || isAdmin()) &&
+                    (!('subscription' in request.resource.data) || request.resource.data.subscription == 'free' || isAdmin());
+      allow update: if (isOwner(userId) && isValidUser() && uidNotModified() &&
+                    request.resource.data.createdAt == resource.data.createdAt &&
+                    (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+                    (!('subscription' in request.resource.data) || request.resource.data.subscription == resource.data.subscription) &&
+                    (!('subscriptionExpiry' in request.resource.data) || request.resource.data.subscriptionExpiry == resource.data.subscriptionExpiry)) || isAdmin();
+    }
+
+    match /usage/{usageId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidUsage();
+      allow update: if isAuthenticated() && request.resource.data.userId == request.auth.uid && isValidUsage() &&
+                    request.resource.data.userId == resource.data.userId &&
+                    request.resource.data.date == resource.data.date;
     }
 
     match /projects/{projectId} {

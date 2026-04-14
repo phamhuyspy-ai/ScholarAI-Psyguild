@@ -1,14 +1,20 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 
+let currentApiKey: string | null = null;
 let aiClient: GoogleGenAI | null = null;
 
 function getAIClient() {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("Vui lòng cấu hình GEMINI_API_KEY trong biến môi trường (Environment Variables) trên Vercel.");
-    }
+  const localKey = localStorage.getItem('GEMINI_API_KEY');
+  const envKey = process.env.GEMINI_API_KEY || (import.meta as any).env.VITE_GEMINI_API_KEY;
+  const apiKey = localKey || envKey;
+
+  if (!apiKey) {
+    throw new Error("Vui lòng nhập API Key trong phần Cài đặt hoặc cấu hình biến môi trường.");
+  }
+
+  if (!aiClient || currentApiKey !== apiKey) {
     aiClient = new GoogleGenAI({ apiKey });
+    currentApiKey = apiKey;
   }
   return aiClient;
 }
