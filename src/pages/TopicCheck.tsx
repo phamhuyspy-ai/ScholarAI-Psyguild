@@ -3,10 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { Loader2, Search } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { ProgressBar } from '../components/ProgressBar';
 import { generateAIContent } from '../lib/ai';
+import { ResultActions } from '../components/ResultActions';
 
 export default function TopicCheck() {
   const [topic, setTopic] = useState('');
@@ -92,13 +96,16 @@ Vui lòng cung cấp báo cáo phân tích chi tiết bằng Markdown RÕ RÀNG,
 
         <div className="lg:col-span-2">
           <Card className="h-full min-h-[500px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Kết quả Phân tích</CardTitle>
+              {result && (
+                <ResultActions text={result} elementId="topic-check-result" fileName="kiem-tra-chu-de.pdf" />
+              )}
             </CardHeader>
             <CardContent>
               {result ? (
-                <div className="prose prose-slate max-w-none">
-                  <Markdown>{result}</Markdown>
+                <div id="topic-check-result" className="markdown-body bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                  <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm, remarkBreaks]}>{result}</Markdown>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20">

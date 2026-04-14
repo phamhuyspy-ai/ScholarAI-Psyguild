@@ -4,10 +4,13 @@ import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import { Loader2, TrendingUp, Sparkles } from 'lucide-react';
 import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { useAuth } from '../lib/auth';
 import { ProgressBar } from '../components/ProgressBar';
 import { generateAIContent } from '../lib/ai';
+import { ResultActions } from '../components/ResultActions';
 
 export default function ContentStrategy() {
   const [input, setInput] = useState('');
@@ -125,8 +128,11 @@ Hãy nghiên cứu và lập một chiến lược nội dung chi tiết, tập 
 
         <div className="lg:col-span-2">
           <Card className="h-full min-h-[500px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-lg">Kết quả Chiến lược</CardTitle>
+              {result && !loading && (
+                <ResultActions text={result} elementId="content-strategy-result" fileName="chien-luoc-noi-dung.pdf" />
+              )}
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -135,19 +141,8 @@ Hãy nghiên cứu và lập một chiến lược nội dung chi tiết, tập 
                   <p>AI đang xây dựng chiến lược nội dung đa kênh...</p>
                 </div>
               ) : result ? (
-                <div className="prose prose-slate max-w-none 
-                  prose-headings:text-slate-800 prose-headings:font-bold 
-                  prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg
-                  prose-a:text-rose-600 hover:prose-a:text-rose-700
-                  prose-table:w-full prose-table:border-collapse prose-table:overflow-hidden prose-table:rounded-lg prose-table:shadow-sm prose-table:my-6
-                  prose-th:bg-rose-50 prose-th:text-rose-800 prose-th:py-3 prose-th:px-4 prose-th:text-left prose-th:border-b-2 prose-th:border-rose-200
-                  prose-td:py-3 prose-td:px-4 prose-td:border-b prose-td:border-slate-100
-                  prose-tr:hover:bg-slate-50
-                  prose-li:marker:text-rose-500
-                  prose-strong:text-rose-700
-                  prose-blockquote:border-l-4 prose-blockquote:border-rose-300 prose-blockquote:bg-rose-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg prose-blockquote:not-italic
-                ">
-                  <Markdown remarkPlugins={[remarkGfm]}>{result}</Markdown>
+                <div id="content-strategy-result" className="markdown-body bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                  <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm, remarkBreaks]}>{result}</Markdown>
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center text-slate-400 py-20 text-center">

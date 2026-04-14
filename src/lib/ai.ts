@@ -16,12 +16,15 @@ export async function generateAIContent(
   
   if (vercelUrl) {
     const cleanUrl = vercelUrl.replace(/\/$/, '');
+    const formattingInstruction = "\n\nLƯU Ý QUAN TRỌNG VỀ ĐỊNH DẠNG:\n- Sử dụng Markdown chuẩn để trình bày.\n- KHÔNG sử dụng thẻ <br> để xuống dòng. Hãy sử dụng 2 lần xuống dòng (double newline) để tạo đoạn văn mới.\n- Sử dụng bảng, danh sách, in đậm để làm nổi bật thông tin quan trọng.\n- Đảm bảo văn bản rõ ràng, dễ đọc, không bị dính chữ.";
+    const fullPrompt = prompt + formattingInstruction;
+
     const response = await fetch(`${cleanUrl}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         userId: user?.email || user?.uid || 'anonymous',
-        prompt,
+        prompt: fullPrompt,
         model
       })
     });
@@ -44,10 +47,13 @@ export async function generateAIContent(
     throw new Error("Vui lòng cấu hình Vercel Proxy hoặc nhập API Key trong phần Cài đặt.");
   }
   
+  const formattingInstruction = "\n\nLƯU Ý QUAN TRỌNG VỀ ĐỊNH DẠNG:\n- Sử dụng Markdown chuẩn để trình bày.\n- KHÔNG sử dụng thẻ <br> để xuống dòng. Hãy sử dụng 2 lần xuống dòng (double newline) để tạo đoạn văn mới.\n- Sử dụng bảng, danh sách, in đậm để làm nổi bật thông tin quan trọng.\n- Đảm bảo văn bản rõ ràng, dễ đọc, không bị dính chữ.";
+  const fullPrompt = prompt + formattingInstruction;
+
   const ai = new GoogleGenAI({ apiKey });
   const response = await ai.models.generateContent({
     model,
-    contents: prompt,
+    contents: fullPrompt,
   });
   
   if (!response.text) throw new Error('Không có phản hồi từ AI');

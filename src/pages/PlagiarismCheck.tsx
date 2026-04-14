@@ -3,11 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { Loader2, FileText, Upload } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 import * as mammoth from 'mammoth';
 import { useAuth } from '../lib/auth';
 import { generateAIContent } from '../lib/ai';
+import { ResultActions } from '../components/ResultActions';
 
 // Set PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -230,13 +234,16 @@ Vui lòng cung cấp báo cáo phân tích sâu bằng Markdown RÕ RÀNG, ĐẸ
 
         <div>
           <Card className="h-full min-h-[500px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Báo cáo Phân tích</CardTitle>
+              {result && (
+                <ResultActions text={result} elementId="plagiarism-result" fileName="bao-cao-dao-van.pdf" />
+              )}
             </CardHeader>
             <CardContent>
               {result ? (
-                <div className="prose prose-slate max-w-none">
-                  <Markdown>{result}</Markdown>
+                <div id="plagiarism-result" className="markdown-body bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                  <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm, remarkBreaks]}>{result}</Markdown>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20">

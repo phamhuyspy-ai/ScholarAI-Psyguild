@@ -128,3 +128,81 @@
     @apply font-sans;
     }
 }
+
+@layer components {
+  .markdown-body {
+    @apply text-slate-800 leading-8 space-y-6;
+  }
+
+  .markdown-body h1 {
+    @apply text-2xl font-bold text-slate-900 mt-8 mb-4 border-b pb-2 border-slate-200;
+  }
+
+  .markdown-body h2 {
+    @apply text-xl font-semibold text-slate-900 mt-6 mb-3 flex items-center gap-2;
+  }
+
+  .markdown-body h3 {
+    @apply text-lg font-medium text-slate-800 mt-4 mb-2;
+  }
+
+  .markdown-body p {
+    @apply mb-6 text-slate-700 leading-8 last:mb-0;
+  }
+
+  .markdown-body br {
+    @apply block mb-1 content-[''];
+  }
+
+  .markdown-body ul, .markdown-body ol {
+    @apply ml-6 mb-4 space-y-2;
+  }
+
+  .markdown-body ul {
+    @apply list-disc;
+  }
+
+  .markdown-body ol {
+    @apply list-decimal;
+  }
+
+  .markdown-body li {
+    @apply text-slate-700;
+  }
+
+  .markdown-body blockquote {
+    @apply border-l-4 border-amber-500 bg-amber-50 p-4 italic my-4 rounded-r-lg;
+  }
+
+  .markdown-body table {
+    @apply w-full border-collapse my-6 overflow-hidden rounded-lg border border-slate-200 shadow-sm;
+  }
+
+  .markdown-body thead {
+    @apply bg-slate-100 text-slate-900 font-semibold;
+  }
+
+  .markdown-body th, .markdown-body td {
+    @apply border border-slate-200 p-3 text-left text-sm;
+  }
+
+  .markdown-body tr:nth-child(even) {
+    @apply bg-slate-50/50;
+  }
+
+  .markdown-body code {
+    @apply bg-slate-100 text-slate-900 px-1.5 py-0.5 rounded font-mono text-sm;
+  }
+
+  .markdown-body pre {
+    @apply bg-slate-900 text-slate-50 p-4 rounded-lg overflow-x-auto font-mono text-sm my-4 border border-slate-800 shadow-lg;
+  }
+
+  .markdown-body strong {
+    @apply font-bold text-slate-900;
+  }
+
+  .markdown-body hr {
+    @apply my-8 border-t border-slate-200;
+  }
+}

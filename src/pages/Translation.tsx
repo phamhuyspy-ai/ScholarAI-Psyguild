@@ -3,10 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../components/ui/button';
 import { Textarea } from '../../components/ui/textarea';
 import Markdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
+import remarkGfm from 'remark-gfm';
 import { Loader2, Languages } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { ProgressBar } from '../components/ProgressBar';
 import { generateAIContent } from '../lib/ai';
+import { ResultActions } from '../components/ResultActions';
 
 export default function Translation() {
   const [text, setText] = useState('');
@@ -95,13 +99,16 @@ Chỉ trả về bản dịch, không cần giải thích thêm.`;
 
         <div>
           <Card className="h-full min-h-[500px]">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle>Bản dịch</CardTitle>
+              {result && (
+                <ResultActions text={result} elementId="translation-result" fileName="ban-dich.pdf" />
+              )}
             </CardHeader>
             <CardContent>
               {result ? (
-                <div className="prose prose-slate max-w-none whitespace-pre-wrap">
-                  {result}
+                <div id="translation-result" className="markdown-body bg-white p-6 rounded-xl border border-slate-100 shadow-sm whitespace-pre-wrap">
+                  <Markdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm, remarkBreaks]}>{result}</Markdown>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-slate-400 py-20">
