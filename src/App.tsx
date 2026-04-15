@@ -13,7 +13,7 @@ import Pricing from './pages/Pricing';
 import { useAuth } from './lib/auth';
 
 function AppRoutes() {
-  const { user, isAdmin, loading } = useAuth();
+  const { isAdmin, loading } = useAuth();
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Đang tải...</div>;
@@ -23,12 +23,12 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
-        <Route path="design" element={user ? <ResearchDesign /> : <Navigate to="/" replace />} />
-        <Route path="topic" element={user ? <TopicCheck /> : <Navigate to="/" replace />} />
-        <Route path="plagiarism" element={user ? <PlagiarismCheck /> : <Navigate to="/" replace />} />
-        <Route path="translation" element={user ? <Translation /> : <Navigate to="/" replace />} />
-        <Route path="content-strategy" element={user ? <ContentStrategy /> : <Navigate to="/" replace />} />
-        <Route path="channel-strategy" element={user ? <ChannelStrategy /> : <Navigate to="/" replace />} />
+        <Route path="design" element={<ResearchDesign />} />
+        <Route path="topic" element={<TopicCheck />} />
+        <Route path="plagiarism" element={<PlagiarismCheck />} />
+        <Route path="translation" element={<Translation />} />
+        <Route path="content-strategy" element={<ContentStrategy />} />
+        <Route path="channel-strategy" element={<ChannelStrategy />} />
         <Route path="pricing" element={<Pricing />} />
         <Route path="settings" element={isAdmin ? <Settings /> : <Navigate to="/" replace />} />
       </Route>
@@ -38,15 +38,6 @@ function AppRoutes() {
 }
 
 export default function App() {
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      localStorage.removeItem('current_user');
-      // Optionally clear other session-specific data
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, []);
-
   return (
     <BrowserRouter>
       <AppRoutes />
