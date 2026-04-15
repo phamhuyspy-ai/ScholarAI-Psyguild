@@ -14,7 +14,25 @@ export function ResultActions({ text, elementId, fileName = 'ket-qua.pdf' }: Res
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for iframes or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          console.error('Fallback copy failed', err);
+        }
+        textArea.remove();
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -33,13 +51,18 @@ export function ResultActions({ text, elementId, fileName = 'ket-qua.pdf' }: Res
       margin:       15,
       filename:     fileName,
       image:        { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true,
+        logging: false
+      },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
     };
 
     console.log('Attempting to generate PDF for:', elementId);
     html2pdf().set(opt).from(element).save().catch((err: any) => {
       console.error('html2pdf error:', err);
+      alert('Có lỗi xảy ra khi tạo PDF. Vui lòng thử lại.');
     });
   };
 

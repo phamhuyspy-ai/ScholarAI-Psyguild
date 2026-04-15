@@ -29,6 +29,21 @@ async function callGeminiWithRetry(params: any, retries = 3, delay = 1000): Prom
       await new Promise(resolve => setTimeout(resolve, delay));
       return callGeminiWithRetry(params, retries - 1, delay * 2);
     }
+    
+    // Friendly error messages
+    if (error.status === 503) {
+      throw new Error("Hệ thống đang quá tải (503). Vui lòng thử lại sau vài phút.");
+    }
+    if (error.status === 404) {
+      throw new Error("Không tìm thấy tài nguyên yêu cầu (404). Vui lòng kiểm tra lại cấu hình.");
+    }
+    if (error.status === 401 || error.status === 403) {
+      throw new Error("API Key không hợp lệ hoặc không có quyền truy cập. Vui lòng kiểm tra lại cài đặt.");
+    }
+    if (error.status === 429) {
+      throw new Error("Bạn đã vượt quá hạn mức yêu cầu (429). Vui lòng đợi một lát rồi thử lại.");
+    }
+    
     throw error;
   }
 }
