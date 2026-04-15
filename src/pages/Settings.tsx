@@ -11,6 +11,7 @@ export default function Settings() {
   const [gasUrl, setGasUrl] = useState('');
   const [vercelUrl, setVercelUrl] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');
+  const [aiModel, setAiModel] = useState('gemini-2.0-flash');
   const [bankId, setBankId] = useState('MB');
   const [accountNo, setAccountNo] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -25,6 +26,9 @@ export default function Settings() {
     
     const storedGptKey = localStorage.getItem('OPENAI_API_KEY');
     if (storedGptKey) setGptApiKey(storedGptKey);
+
+    const storedAiModel = localStorage.getItem('AI_MODEL');
+    if (storedAiModel) setAiModel(storedAiModel);
 
     const storedGasUrl = localStorage.getItem('GAS_WEB_APP_URL');
     if (storedGasUrl) setGasUrl(storedGasUrl);
@@ -67,6 +71,8 @@ export default function Settings() {
 
     if (gptApiKey.trim()) localStorage.setItem('OPENAI_API_KEY', gptApiKey.trim());
     else localStorage.removeItem('OPENAI_API_KEY');
+
+    localStorage.setItem('AI_MODEL', aiModel);
 
     if (gasUrl.trim()) localStorage.setItem('GAS_WEB_APP_URL', gasUrl.trim());
     else localStorage.removeItem('GAS_WEB_APP_URL');
@@ -185,6 +191,24 @@ export default function Settings() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="aiModel" className="text-sm font-medium text-slate-700">
+                Mô hình AI mặc định
+              </label>
+              <select
+                id="aiModel"
+                className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm"
+                value={aiModel}
+                onChange={(e) => setAiModel(e.target.value)}
+              >
+                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Nhanh, ổn định)</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                <option value="gpt-4o">GPT-4o (OpenAI)</option>
+                <option value="gpt-4o-mini">GPT-4o-mini (OpenAI)</option>
+              </select>
+            </div>
+
             <div className="space-y-2">
               <label htmlFor="apiKey" className="text-sm font-medium text-slate-700">
                 Google Gemini API Key
