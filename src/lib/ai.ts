@@ -6,7 +6,7 @@ export async function generateAIContent(
   user: any,
   userData: any,
   isAdmin: boolean,
-  defaultModel: string = 'gemini-2.0-flash'
+  defaultModel: string = 'gemini-1.5-flash'
 ): Promise<string> {
   // 1. Kiểm tra giới hạn lượt dùng
   await checkAndIncrementUsage(user?.email || user?.uid, isAdmin, userData?.subscription);

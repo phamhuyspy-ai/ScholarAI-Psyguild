@@ -11,7 +11,7 @@ export default function Settings() {
   const [gasUrl, setGasUrl] = useState('');
   const [vercelUrl, setVercelUrl] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');
-  const [aiModel, setAiModel] = useState('gemini-2.0-flash');
+  const [aiModel, setAiModel] = useState('gemini-1.5-flash');
   const [freeLimit, setFreeLimit] = useState('10');
   const [monthlyLimit, setMonthlyLimit] = useState('1000');
   const [yearlyLimit, setYearlyLimit] = useState('10000');
@@ -243,8 +243,7 @@ export default function Settings() {
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
               >
-                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Nhanh, ổn định)</option>
-                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Nhanh, ổn định)</option>
                 <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                 <option value="gpt-4o">GPT-4o (OpenAI)</option>
                 <option value="gpt-4o-mini">GPT-4o-mini (OpenAI)</option>

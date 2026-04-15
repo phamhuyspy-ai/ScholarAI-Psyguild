@@ -2,7 +2,7 @@
 export async function checkAndIncrementUsage(userId: string | undefined, isAdmin: boolean, subscription: string | undefined): Promise<boolean> {
   if (isAdmin) return true;
 
-  const freeLimit = parseInt(localStorage.getItem('LIMIT_FREE') || '10');
+  const freeLimit = parseInt(localStorage.getItem('LIMIT_FREE') || '20');
   const monthlyLimit = parseInt(localStorage.getItem('LIMIT_MONTHLY') || '1000');
   const yearlyLimit = parseInt(localStorage.getItem('LIMIT_YEARLY') || '10000');
 
