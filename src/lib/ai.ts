@@ -51,11 +51,47 @@ export async function generateAIContent(
   const fullPrompt = prompt + formattingInstruction;
 
   const ai = new GoogleGenAI({ apiKey });
-  const response = await ai.models.generateContent({
-    model,
-    contents: fullPrompt,
-  });
   
-  if (!response.text) throw new Error('Không có phản hồi từ AI');
-  return response.text;
+  // Update deprecated model to current preview model
+  const actualModel = model === 'gemini-2.5-pro' ? 'gemini-3.1-pro-preview' : model;
+  
+  const callWithRetry = async (retries = 3, delay = 1000): Promise<string> => {
+    try {
+      const response = await ai.models.generateContent({
+        model: actualModel,
+        contents: fullPrompt,
+      });
+      if (!response.text) throw new Error('Không có phản hồi từ AI');
+      return response.text;
+    } catch (error: any) {
+      if (error.status === 503 && retries > 0) {
+        console.warn(`Gemini API 503 error, retrying in ${delay}ms...`, error);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return callWithRetry(retries - 1, delay * 2);
+      }
+      
+      // Friendly error messages
+      if (error.status === 503) {
+        throw new Error("Hệ thống AI đang quá tải (503). Vui lòng thử lại sau vài phút.");
+      }
+      if (error.status === 404) {
+        throw new Error("Không tìm thấy mô hình AI yêu cầu (404). Vui lòng kiểm tra lại cấu hình.");
+      }
+      if (error.status === 401 || error.status === 403) {
+        throw new Error("API Key không hợp lệ hoặc không có quyền truy cập. Vui lòng kiểm tra lại cài đặt.");
+      }
+      if (error.status === 429) {
+        throw new Error("Bạn đã vượt quá hạn mức yêu cầu AI (429). Vui lòng đợi một lát rồi thử lại.");
+      }
+      
+      // If it's a raw JSON error from the API, try to parse and show a friendly message
+      if (error.message && error.message.includes('"status":"UNAVAILABLE"')) {
+         throw new Error("Hệ thống AI đang quá tải. Vui lòng thử lại sau vài phút.");
+      }
+      
+      throw error;
+    }
+  };
+
+  return callWithRetry();
 }
