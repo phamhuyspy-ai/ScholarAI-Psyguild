@@ -12,6 +12,9 @@ export default function Settings() {
   const [vercelUrl, setVercelUrl] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');
   const [aiModel, setAiModel] = useState('gemini-2.0-flash');
+  const [freeLimit, setFreeLimit] = useState('10');
+  const [monthlyLimit, setMonthlyLimit] = useState('1000');
+  const [yearlyLimit, setYearlyLimit] = useState('10000');
   const [bankId, setBankId] = useState('MB');
   const [accountNo, setAccountNo] = useState('');
   const [accountName, setAccountName] = useState('');
@@ -29,6 +32,13 @@ export default function Settings() {
 
     const storedAiModel = localStorage.getItem('AI_MODEL');
     if (storedAiModel) setAiModel(storedAiModel);
+
+    const storedFreeLimit = localStorage.getItem('LIMIT_FREE');
+    if (storedFreeLimit) setFreeLimit(storedFreeLimit);
+    const storedMonthlyLimit = localStorage.getItem('LIMIT_MONTHLY');
+    if (storedMonthlyLimit) setMonthlyLimit(storedMonthlyLimit);
+    const storedYearlyLimit = localStorage.getItem('LIMIT_YEARLY');
+    if (storedYearlyLimit) setYearlyLimit(storedYearlyLimit);
 
     const storedGasUrl = localStorage.getItem('GAS_WEB_APP_URL');
     if (storedGasUrl) setGasUrl(storedGasUrl);
@@ -73,6 +83,9 @@ export default function Settings() {
     else localStorage.removeItem('OPENAI_API_KEY');
 
     localStorage.setItem('AI_MODEL', aiModel);
+    localStorage.setItem('LIMIT_FREE', freeLimit);
+    localStorage.setItem('LIMIT_MONTHLY', monthlyLimit);
+    localStorage.setItem('LIMIT_YEARLY', yearlyLimit);
 
     if (gasUrl.trim()) localStorage.setItem('GAS_WEB_APP_URL', gasUrl.trim());
     else localStorage.removeItem('GAS_WEB_APP_URL');
@@ -174,6 +187,35 @@ export default function Settings() {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-medium text-slate-700">Tên chủ tài khoản</label>
                 <Input value={accountName} onChange={(e) => setAccountName(e.target.value)} placeholder="NGUYEN VAN A" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Package Limits */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="w-5 h-5" />
+              Cấu hình giới hạn gói
+            </CardTitle>
+            <CardDescription>
+              Thiết lập số lượt yêu cầu tối đa cho từng loại gói.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Gói Miễn phí (Ngày)</label>
+                <Input type="number" value={freeLimit} onChange={(e) => setFreeLimit(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Gói Tháng (Tháng)</label>
+                <Input type="number" value={monthlyLimit} onChange={(e) => setMonthlyLimit(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Gói Năm (Năm)</label>
+                <Input type="number" value={yearlyLimit} onChange={(e) => setYearlyLimit(e.target.value)} />
               </div>
             </div>
           </CardContent>
