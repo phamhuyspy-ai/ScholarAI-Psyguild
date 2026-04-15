@@ -19,8 +19,21 @@ function getAIClient() {
   return aiClient;
 }
 
-export async function generateResearchDesign(topic: string) {
+async function callGeminiWithRetry(params: any, retries = 3, delay = 1000): Promise<any> {
   const ai = getAIClient();
+  try {
+    return await ai.models.generateContent(params);
+  } catch (error: any) {
+    if (error.status === 503 && retries > 0) {
+      console.warn(`Gemini API 503 error, retrying in ${delay}ms...`, error);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return callGeminiWithRetry(params, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
+export async function generateResearchDesign(topic: string) {
   const prompt = `Bạn là một chuyên gia nghiên cứu học thuật. Hãy thiết kế một nghiên cứu toàn diện cho chủ đề sau: "${topic}".
   
 Bao gồm:
@@ -34,7 +47,7 @@ Bao gồm:
 
 Định dạng đầu ra bằng Markdown. Vui lòng trả lời hoàn toàn bằng tiếng Việt.`;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: "gemini-3.1-pro-preview",
     contents: prompt,
     config: {
@@ -46,7 +59,6 @@ Bao gồm:
 }
 
 export async function checkTopicDuplication(topic: string) {
-  const ai = getAIClient();
   const prompt = `Bạn là một trợ lý nghiên cứu học thuật. Một sinh viên muốn nghiên cứu chủ đề sau: "${topic}".
   
 Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng link nguồn. Tập trung tìm kiếm trên các nền tảng nghiên cứu chính thống:
@@ -59,7 +71,7 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 
 Định dạng đầu ra bằng Markdown. Vui lòng trả lời hoàn toàn bằng tiếng Việt.`;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
@@ -71,7 +83,6 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 }
 
 export async function checkPlagiarism(text: string) {
-  const ai = getAIClient();
   const prompt = `Bạn là một hệ thống kiểm tra đạo văn học thuật (Plagiarism Detection System) sử dụng NLP. Hãy phân tích văn bản sau để tìm kiếm sự trùng lặp ý tưởng hoặc thiếu tính nguyên bản.
 
 Văn bản cần phân tích:
@@ -88,7 +99,7 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 
 Định dạng đầu ra bằng Markdown. Vui lòng trả lời hoàn toàn bằng tiếng Việt.`;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: "gemini-3-flash-preview",
     contents: prompt,
     config: {
@@ -100,8 +111,7 @@ Yêu cầu truy tìm thông tin phải có nguồn gốc chính xác, đúng lin
 }
 
 export async function analyzeVideo(fileData: string, mimeType: string, prompt: string) {
-  const ai = getAIClient();
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: "gemini-3.1-pro-preview",
     contents: {
       parts: [
@@ -122,7 +132,6 @@ export async function analyzeVideo(fileData: string, mimeType: string, prompt: s
 }
 
 export async function translateText(text: string, targetLanguage: string) {
-  const ai = getAIClient();
   const prompt = `Bạn là một chuyên gia dịch thuật tài liệu học thuật. Hãy dịch đoạn văn bản sau sang ${targetLanguage} một cách chính xác nhất.
 Giữ nguyên văn phong học thuật, thuật ngữ chuyên ngành và ý nghĩa gốc. Không thêm bất kỳ bình luận nào, chỉ cung cấp bản dịch.
 
@@ -131,7 +140,7 @@ Văn bản cần dịch:
 ${text}
 """`;
 
-  const response = await ai.models.generateContent({
+  const response = await callGeminiWithRetry({
     model: "gemini-3.1-pro-preview",
     contents: prompt,
   });
