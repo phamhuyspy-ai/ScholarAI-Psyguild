@@ -51,8 +51,20 @@ Hãy thiết kế một khung nghiên cứu toàn diện. Trình bày bằng Mar
       const res = await generateAIContent(prompt, user, userData, isAdmin);
       setResult(res);
     } catch (error: any) {
-      console.error(error);
-      setResult(error.message || 'Đã xảy ra lỗi trong quá trình tạo thiết kế nghiên cứu.');
+      console.error('Error generating research design:', error);
+      let errorMessage = 'Đã xảy ra lỗi trong quá trình tạo thiết kế nghiên cứu.';
+      
+      try {
+        const errInfo = JSON.parse(error.message);
+        if (errInfo.error) {
+          errorMessage = `Lỗi hệ thống: ${errInfo.error}`;
+        }
+      } catch (e) {
+        // Not a JSON error message, use original
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setResult(errorMessage);
     } finally {
       setLoading(false);
     }
