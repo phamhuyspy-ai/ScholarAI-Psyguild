@@ -24,7 +24,10 @@ export function ResultActions({ text, elementId, fileName = 'ket-qua.pdf' }: Res
 
   const handleDownloadPdf = () => {
     const element = document.getElementById(elementId);
-    if (!element) return;
+    if (!element) {
+      console.error(`Element with ID ${elementId} not found.`);
+      return;
+    }
 
     const opt = {
       margin:       15,
@@ -34,7 +37,10 @@ export function ResultActions({ text, elementId, fileName = 'ket-qua.pdf' }: Res
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
     };
 
-    html2pdf().set(opt).from(element).save();
+    console.log('Attempting to generate PDF for:', elementId);
+    html2pdf().set(opt).from(element).save().catch((err: any) => {
+      console.error('html2pdf error:', err);
+    });
   };
 
   return (
